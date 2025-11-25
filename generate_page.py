@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Fetches the latest Overture Maps release from S3 and generates a static HTML page.
+Fetches the latest Overture Maps release from the STAC catalog and generates a static HTML page.
 
 Requirements:
-    pip install obstore
+    pip install pystac
 
 Usage:
     python generate_overture_page.py
@@ -12,20 +12,21 @@ Output:
     index.html - Static page with latest release info
 """
 
-from obstore.store import S3Store
+import pystac
+
+
+STAC_CATALOG_URL = "https://stac.overturemaps.org/catalog.json"
 
 
 def get_latest_release() -> str:
-    """Fetch the latest release version from the S3 bucket."""
-    store = S3Store("overturemaps-us-west-2", region="us-west-2", skip_signature=True)
-    releases = store.list_with_delimiter("release/")
+    """Fetch the latest release version from the STAC catalog."""
+    catalog = pystac.Catalog.from_file(STAC_CATALOG_URL)
     
-    # Sort releases in reverse order (newest first)
-    sorted_releases = sorted(releases.get("common_prefixes"), reverse=True)
+    # Get all child collections/catalogs and sort by ID (date-based) descending
+    children = list(catalog.get_children())
+    latest = sorted(children, key=lambda c: c.id, reverse=True)[0]
     
-    # Extract version from path like "release/2025-11-19.0/"
-    latest = sorted_releases[0].split("/")[1]
-    return latest
+    return latest.id
 
 
 def generate_html(version: str) -> str:
@@ -93,7 +94,6 @@ def generate_html(version: str) -> str:
             border-radius: 8px;
             font-family: 'SF Mono', Monaco, 'Courier New', monospace;
             font-size: 0.9rem;
-            margin-bottom: 20px;
             word-break: break-all;
             border: 1px solid #334155;
         }}
@@ -114,6 +114,39 @@ def generate_html(version: str) -> str:
         .footer a:hover {{
             text-decoration: underline;
         }}
+        
+        .path-container {{
+            position: relative;
+            margin-bottom: 20px;
+        }}
+        
+        .path-container .path {{
+            padding-right: 70px;
+        }}
+        
+        .copy-btn {{
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: background 0.2s;
+        }}
+        
+        .copy-btn:hover {{
+            background: #4338ca;
+        }}
+        
+        .copy-btn.copied {{
+            background: #059669;
+        }}
     </style>
 </head>
 <body>
@@ -123,22 +156,42 @@ def generate_html(version: str) -> str:
         <div class="version">{version}</div>
         
         <label>Amazon S3</label>
-        <div class="path">s3://overturemaps-us-west-2/release/{version}/</div>
+        <div class="path-container">
+            <div class="path" id="s3-path">s3://overturemaps-us-west-2/release/{version}/</div>
+            <button class="copy-btn" onclick="copyPath('s3-path', this)">Copy</button>
+        </div>
         
         <label>Microsoft Azure Blob Storage</label>
-        <div class="path">https://overturemapswestus2.blob.core.windows.net/release/{version}/</div>
+        <div class="path-container">
+            <div class="path" id="azure-path">https://overturemapswestus2.blob.core.windows.net/release/{version}/</div>
+            <button class="copy-btn" onclick="copyPath('azure-path', this)">Copy</button>
+        </div>
         
         <div class="footer">
             <a href="https://docs.overturemaps.org/getting-data/" target="_blank">Documentation</a>
         </div>
     </div>
+    
+    <script>
+        function copyPath(id, btn) {{
+            const text = document.getElementById(id).textContent;
+            navigator.clipboard.writeText(text).then(() => {{
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {{
+                    btn.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                }}, 2000);
+            }});
+        }}
+    </script>
 </body>
 </html>
 """
 
 
 def main():
-    print("Fetching latest Overture Maps release from S3...")
+    print("Fetching latest Overture Maps release from STAC catalog...")
     version = get_latest_release()
     print(f"Latest release: {version}")
     

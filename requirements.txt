@@ -1,1 +1,1 @@
-obstore
+pystac
