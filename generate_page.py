@@ -40,146 +40,90 @@ def generate_html(version: str) -> str:
     <style>
         body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f172a;
+            background: white;
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            color: #e2e8f0;
             margin: 0;
         }}
         
-        .card {{
-            background: #1e293b;
-            border-radius: 16px;
-            padding: 40px;
-            max-width: 600px;
-            width: 100%;
-            border: 1px solid #334155;
-        }}
-        
-        h1 {{
-            font-size: 1.4rem;
-            margin: 0 0 32px 0;
-            color: #f8fafc;
-        }}
-        
-        h1 span {{
-            color: #818cf8;
+        .subtitle {{
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 16px;
         }}
         
         .version {{
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            display: inline-block;
-            padding: 16px 32px;
-            border-radius: 12px;
-            font-size: 2rem;
+            color: #7c3aed;
+            font-size: 5rem;
             font-weight: 700;
-            margin-bottom: 32px;
+            margin-bottom: 48px;
         }}
         
-        label {{
-            display: block;
-            color: #94a3b8;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 6px;
+        .paths {{
+            display: flex;
+            gap: 12px;
+            margin-bottom: 48px;
         }}
         
-        .path {{
-            background: #0f172a;
-            padding: 14px 16px;
-            border-radius: 8px;
-            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-            font-size: 0.9rem;
-            word-break: break-all;
-            border: 1px solid #334155;
-        }}
-        
-        .footer {{
-            margin-top: 24px;
-            padding-top: 24px;
-            border-top: 1px solid #334155;
-            text-align: center;
+        .copy-btn {{
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
             font-size: 0.85rem;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            color: #374151;
+            transition: background 0.2s;
+        }}
+        
+        .copy-btn:hover {{
+            background: #e5e7eb;
+        }}
+        
+        .copy-btn.copied {{
+            background: #d1fae5;
+            border-color: #a7f3d0;
+            color: #065f46;
         }}
         
         .footer a {{
-            color: #818cf8;
+            color: #7c3aed;
             text-decoration: none;
+            font-size: 0.9rem;
         }}
         
         .footer a:hover {{
             text-decoration: underline;
         }}
-        
-        .path-container {{
-            position: relative;
-            margin-bottom: 20px;
-        }}
-        
-        .path-container .path {{
-            padding-right: 70px;
-        }}
-        
-        .copy-btn {{
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #4f46e5;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            transition: background 0.2s;
-        }}
-        
-        .copy-btn:hover {{
-            background: #4338ca;
-        }}
-        
-        .copy-btn.copied {{
-            background: #059669;
-        }}
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1><span>Overture Maps</span> Latest Release</h1>
-        
-        <div class="version">{version}</div>
-        
-        <label>Amazon S3</label>
-        <div class="path-container">
-            <div class="path" id="s3-path">s3://overturemaps-us-west-2/release/{version}/</div>
-            <button class="copy-btn" onclick="copyPath('s3-path', this)">Copy</button>
-        </div>
-        
-        <label>Microsoft Azure Blob Storage</label>
-        <div class="path-container">
-            <div class="path" id="azure-path">https://overturemapswestus2.blob.core.windows.net/release/{version}/</div>
-            <button class="copy-btn" onclick="copyPath('azure-path', this)">Copy</button>
-        </div>
-        
-        <div class="footer">
-            <a href="https://docs.overturemaps.org/getting-data/" target="_blank">Documentation</a>
-        </div>
+    <div class="subtitle">What's the latest Overture Maps release?</div>
+    
+    <div class="version">{version}</div>
+    
+    <div class="paths">
+        <button class="copy-btn" onclick="copyPath('s3://overturemaps-us-west-2/release/{version}/', this)">Copy S3 path</button>
+        <button class="copy-btn" onclick="copyPath('https://overturemapswestus2.blob.core.windows.net/release/{version}/', this)">Copy Azure path</button>
+    </div>
+    
+    <div class="footer">
+        <a href="https://docs.overturemaps.org/getting-data/" target="_blank">Read the docs</a>
     </div>
     
     <script>
-        function copyPath(id, btn) {{
-            const text = document.getElementById(id).textContent;
+        function copyPath(text, btn) {{
             navigator.clipboard.writeText(text).then(() => {{
+                const original = btn.textContent;
                 btn.textContent = 'Copied!';
                 btn.classList.add('copied');
                 setTimeout(() => {{
-                    btn.textContent = 'Copy';
+                    btn.textContent = original;
                     btn.classList.remove('copied');
                 }}, 2000);
             }});
