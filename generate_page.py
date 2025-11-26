@@ -21,12 +21,7 @@ STAC_CATALOG_URL = "https://stac.overturemaps.org/catalog.json"
 def get_latest_release() -> str:
     """Fetch the latest release version from the STAC catalog."""
     catalog = pystac.Catalog.from_file(STAC_CATALOG_URL)
-    
-    # Get all child collections/catalogs and sort by ID (date-based) descending
-    children = list(catalog.get_children())
-    latest = sorted(children, key=lambda c: c.id, reverse=True)[0]
-    
-    return latest.id
+    return catalog.extra_fields["latest"]
 
 
 def generate_html(version: str) -> str:
