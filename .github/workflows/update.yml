@@ -2,7 +2,7 @@ name: Update Release Page
 
 on:
   schedule:
-    - cron: '0 12 * * *'  # Daily at noon UTC
+    - cron: '0 1 * * 4'  # Wednesdays at 5pm Pacific (1am UTC Thursday)
   workflow_dispatch:  # Manual trigger
 
 permissions:
