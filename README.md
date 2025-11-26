@@ -1,6 +1,6 @@
 # Overture Maps Latest Release
 
-Displays the latest Overture Maps data release version with quick-copy paths to S3 and Azure. Fetches (weekly) the available releases versions the [STAC catalog](https://stac.overturemaps.org/catalog.json) and regenerates the page.
+Displays the latest Overture Maps data release version with quick-copy paths to S3 and Azure. Fetches (weekly) the available release versions from the [STAC catalog](https://stac.overturemaps.org/catalog.json) and regenerates the page.
 
 ## You too can fetch the latest Overture data release version! Here's how.
 
