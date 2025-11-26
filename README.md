@@ -1,8 +1,8 @@
 # Overture Maps Latest Release
 
-Displays the latest Overture Maps data release version with quick-copy paths to S3 and Azure. Fetches (weekly) the available release versions from the [STAC catalog](https://stac.overturemaps.org/catalog.json) and regenerates the page.
+Displays the latest Overture Maps data release version with quick-copy paths to S3 and Azure. Fetches (weekly) the available release versions from the [STAC catalog](https://stac.overturemaps.org/catalog.json) and regenerates [this page](https://danabauer.github.io/overture-latest/).
 
-## You too can fetch the latest Overture data release version! Here's how.
+## You too can fetch the latest Overture data release version!
 
 **Using Python (pystac) to lookup latest in Overture's STAC catalog:**
 
@@ -13,7 +13,7 @@ catalog = pystac.Catalog.from_file("https://stac.overturemaps.org/catalog.json")
 latest = catalog.extra_fields["latest"] #latest is custom Overture property
 ```
 
-**Using Python (obstore) to pull the latest release version from S3 files:**
+**Using Python (obstore) to pull the latest release version directly from S3:**
 
 ```python
 from obstore.store import S3Store
