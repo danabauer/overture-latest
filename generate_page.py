@@ -1,21 +1,29 @@
 #!/usr/bin/env python3
 """
 Fetches the latest Overture Maps release from the STAC catalog and generates a static HTML page.
-
 Requirements:
     pip install pystac
-
 Usage:
     python generate_overture_page.py
     
 Output:
     index.html - Static page with latest release info
 """
-
 import pystac
-
+from urllib.parse import quote
 
 STAC_CATALOG_URL = "https://stac.overturemaps.org/catalog.json"
+PMTILES_BASE = "https://overturemaps-tiles-us-west-2-beta.s3.amazonaws.com"
+# Theme -> (zoom, lat, lng)
+THEME_VIEWS = {
+    "addresses": (14, 40.7359, -73.9911),  # Union Square, NYC
+    "buildings": (11, 39.95, -75.17),       # Philadelphia
+    "base": (8, 39.95, -75.17),             # Philadelphia
+    "divisions": (8, 39.95, -75.17),        # Philadelphia
+    "places": (8, 39.95, -75.17),           # Philadelphia
+    "transportation": (8, 39.95, -75.17),   # Philadelphia
+}
+THEMES = list(THEME_VIEWS.keys())
 
 
 def get_latest_release() -> str:
@@ -24,8 +32,29 @@ def get_latest_release() -> str:
     return catalog.extra_fields["latest"]
 
 
+def get_tile_version(version: str) -> str:
+    """Convert release version to tile version (strip minor version)."""
+    # 2026-01-21.0 -> 2026-01-21
+    return version.rsplit(".", 1)[0]
+
+
+def get_pmtiles_viewer_url(tile_version: str, theme: str) -> str:
+    """Generate pmtiles.io viewer URL for a theme."""
+    pmtiles_url = f"{PMTILES_BASE}/{tile_version}/{theme}.pmtiles"
+    zoom, lat, lng = THEME_VIEWS[theme]
+    return f"https://pmtiles.io/?url={quote(pmtiles_url, safe='')}#map={zoom}/{lat}/{lng}"
+
+
 def generate_html(version: str) -> str:
     """Generate the HTML page with the given version."""
+    tile_version = get_tile_version(version)
+    
+    # Generate tile links
+    tile_links_html = "\n".join(
+        f'        <a href="{get_pmtiles_viewer_url(tile_version, theme)}" target="_blank" class="tile-link">{theme}</a>'
+        for theme in THEMES
+    )
+    
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,7 +90,7 @@ def generate_html(version: str) -> str:
         .paths {{
             display: flex;
             gap: 12px;
-            margin-bottom: 48px;
+            margin-bottom: 32px;
         }}
         
         .copy-btn {{
@@ -86,6 +115,40 @@ def generate_html(version: str) -> str:
             color: #065f46;
         }}
         
+        .tiles-section {{
+            margin-bottom: 48px;
+            text-align: center;
+        }}
+        
+        .tiles-label {{
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 12px;
+        }}
+        
+        .tiles {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }}
+        
+        .tile-link {{
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #374151;
+            text-decoration: none;
+            transition: background 0.2s;
+        }}
+        
+        .tile-link:hover {{
+            background: #e5e7eb;
+            color: #7c3aed;
+        }}
+        
         .footer a {{
             color: #7c3aed;
             text-decoration: none;
@@ -105,6 +168,13 @@ def generate_html(version: str) -> str:
     <div class="paths">
         <button class="copy-btn" onclick="copyPath('s3://overturemaps-us-west-2/release/{version}/', this)">Copy S3 path</button>
         <button class="copy-btn" onclick="copyPath('https://overturemapswestus2.blob.core.windows.net/release/{version}/', this)">Copy Azure path</button>
+    </div>
+    
+    <div class="tiles-section">
+        <div class="tiles-label">View tiles in PMTiles viewer</div>
+        <div class="tiles">
+{tile_links_html}
+        </div>
     </div>
     
     <div class="footer">
