@@ -13,7 +13,7 @@ import pystac
 from urllib.parse import quote
 
 STAC_CATALOG_URL = "https://stac.overturemaps.org/catalog.json"
-PMTILES_BASE = "s3://overturemaps-extras-us-west-2/tiles/"
+PMTILES_BASE = "s3://overturemaps-extras-us-west-2/tiles"
 # Theme -> (zoom, lat, lng)
 THEME_VIEWS = {
     "addresses": (14, 40.7359, -73.9911),  # Union Square, NYC
