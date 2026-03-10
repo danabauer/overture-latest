@@ -32,26 +32,19 @@ def get_latest_release() -> str:
     return catalog.extra_fields["latest"]
 
 
-def get_tile_version(version: str) -> str:
-    """Convert release version to tile version (strip minor version)."""
-    # 2026-01-21.0 -> 2026-01-21
-    return version.rsplit(".", 1)[0]
-
-
-def get_pmtiles_viewer_url(tile_version: str, theme: str) -> str:
+def get_pmtiles_viewer_url(version: str, theme: str) -> str:
     """Generate pmtiles.io viewer URL for a theme."""
-    pmtiles_url = f"{PMTILES_BASE}/{tile_version}/{theme}.pmtiles"
+    pmtiles_url = f"{PMTILES_BASE}/{version}/{theme}.pmtiles"
     zoom, lat, lng = THEME_VIEWS[theme]
     return f"https://pmtiles.io/?url={quote(pmtiles_url, safe='')}#map={zoom}/{lat}/{lng}"
 
 
 def generate_html(version: str) -> str:
     """Generate the HTML page with the given version."""
-    tile_version = get_tile_version(version)
     
     # Generate tile links
     tile_links_html = "\n".join(
-        f'        <a href="{get_pmtiles_viewer_url(tile_version, theme)}" target="_blank" class="tile-link">{theme}</a>'
+        f'        <a href="{get_pmtiles_viewer_url(version, theme)}" target="_blank" class="tile-link">{theme}</a>'
         for theme in THEMES
     )
     
